@@ -31,3 +31,14 @@ F:\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.Assembl
 F:\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.AssemblyInfo.cs
 F:\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.dll
 F:\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.pdb
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\bin\Debug\netcoreapp3.1\Activity1.exe
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\bin\Debug\netcoreapp3.1\Activity1.deps.json
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\bin\Debug\netcoreapp3.1\Activity1.runtimeconfig.json
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\bin\Debug\netcoreapp3.1\Activity1.runtimeconfig.dev.json
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\bin\Debug\netcoreapp3.1\Activity1.dll
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\bin\Debug\netcoreapp3.1\Activity1.pdb
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.csprojAssemblyReference.cache
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.AssemblyInfoInputs.cache
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.AssemblyInfo.cs
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.dll
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity1\obj\Debug\netcoreapp3.1\Activity1.pdb

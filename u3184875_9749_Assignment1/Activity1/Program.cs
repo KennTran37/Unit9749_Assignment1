@@ -2,33 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 
+//This script takes the input of the user and turns it into a 2D graph when valid
+//it will then use different Algorithm to find the Shortest, Easiest, Average, and Hardest path
+//to tavel to reach the End Point from the Start Point in the user's graph
 namespace Activity1
 {
     class Program
     {
         public static Program mainClass = new Program();
 
-        Position[] typesArray =
+        Node[] typesArray =
         {
-            new Position("S", 0), new Position("E", 0), new Position("W40", 5), new Position("W90", 9), new Position("W120", 5), new Position("W0", 1),
-            new Position("W", 1), new Position("O", int.MaxValue), new Position("Ww", 6), new Position("Wg", 3), new Position("Wr", 4)
+            new Node("S", 0), new Node("E", 0), new Node("W40", 5), new Node("W90", 9), new Node("W120", 5), new Node("W0", 1),
+            new Node("W", 1), new Node("O", int.MaxValue), new Node("Ww", 6), new Node("Wg", 3), new Node("Wr", 4)
         };
 
         //public List<List<string>> gridMap = new List<List<string>>();
-        public List<List<Position>> posGridMap = new List<List<Position>>();
+        public List<List<Node>> GridMap = new List<List<Node>>();
 
         int gridRowSize = 5;
         int gridColSize = 5;
 
+        //used to look at the neighbouring nodes
         int[] dirRow = { -1, 1, 0, 0 }; //direction in row
         int[] dirCol = { 0, 0, 1, -1 }; //direction in coloumn
 
-        Position startPosition;
-        Position endPosition;
+        Node startNode;
+        Node endNode;
 
-        List<Position> visitedCells = new List<Position>();
-        List<Position> cameFrom = new List<Position>();
-        Queue<Position> cellsToVisit = new Queue<Position>();
+        List<Node> visitedNodes = new List<Node>();
+        List<Node> cameFrom = new List<Node>();
+        Queue<Node> nodesToVisit = new Queue<Node>();
         bool endFound = false;
 
         static void Main(string[] args)
@@ -48,15 +52,17 @@ namespace Activity1
         void ResetLists()
         {
             endFound = false;
-            cellsToVisit = new Queue<Position>();
-            visitedCells = new List<Position>();
-            cameFrom = new List<Position>();
-            cellsToVisit.Enqueue(startPosition);
-            visitedCells.Add(startPosition);
-            cameFrom.Add(startPosition);
+            nodesToVisit = new Queue<Node>();
+            visitedNodes = new List<Node>();
+            cameFrom = new List<Node>();
+            nodesToVisit.Enqueue(startNode);
+            visitedNodes.Add(startNode);
+            cameFrom.Add(startNode);
         }
 
         #region Checking User's Input
+        //Returns the user's input after checking in a while loop,if the input is null or empty,
+        //if the rows and columns have a valid amount, and whether the types are valid
         string GetUserInput()
         {
             string input = null;
@@ -127,23 +133,25 @@ namespace Activity1
 
         bool IsValidColumnsAndTypes(List<string> rowList)
         {
+            int prevColCount = 0;   
             int startIndex = 0;
-            int prevColCount = 0;
             string sub = null;
+            //making sure that there is only one Start and End Point
             int numOfS = 0;
             int numOfE = 0;
 
-            mainClass.posGridMap = new List<List<Position>>();
+            mainClass.GridMap = new List<List<Node>>();
             foreach (string row in rowList)
             {
-                posGridMap.Add(new List<Position>());
+                GridMap.Add(new List<Node>());
                 startIndex = 0;
                 int currentColCount = 0;
                 for (int i = 0; i < row.Length; i++)
                 {
                     if (row[i] == ',' || i == row.Length - 1)
-                    {
+                    {   
                         sub = row.Substring(startIndex, (i + (i == row.Length - 1 ? 1 : 0)) - startIndex);
+                        //cutting up the row of strings then checking to see if it is a valid type
                         if (!IsValidType(sub))
                         {
                             DisplayError($"Your Input: [{sub}] is invalid -- \n {row}");
@@ -155,10 +163,10 @@ namespace Activity1
                         if (sub == "E")
                             numOfE++;
 
-                        Position pos = GetPositionType(sub);
-                        pos.row = rowList.IndexOf(row);
-                        pos.col = currentColCount;
-                        mainClass.posGridMap.Last().Add(pos);
+                        Node node = GetNodeType(sub);
+                        node.row = rowList.IndexOf(row);
+                        node.col = currentColCount;
+                        mainClass.GridMap.Last().Add(node);
 
                         startIndex += sub.Length + 1;
                         currentColCount++;
@@ -170,7 +178,7 @@ namespace Activity1
 
                 if (prevColCount < 2)
                 {
-                    DisplayError("A Column in your input is smaller then 2 \n Columns can only be a minimum of 2 ");
+                    DisplayError("A Column in your input is smaller then 2.. \n Columns can only be a minimum of 2 ");
                     return false;
                 }
                 else
@@ -198,7 +206,7 @@ namespace Activity1
         //Loop through the array of types and check if the user's type is valid
         bool IsValidType(string userType)
         {
-            foreach (Position type in typesArray)
+            foreach (Node type in typesArray)
                 if (userType == type.type)
                     return true;
             return false;
@@ -207,29 +215,28 @@ namespace Activity1
 
         #region Shortest Path w/ Breath First Search
         //Finds the shortest path to the End Point using the 'Breadth First Search Algorithm'
-        //While the cellsToVisit queue isnt empty, look at the neighbouring cells at the first element of the queue
-        //
+        //While the nodesToVisit queue isnt empty, look at the neighbouring node at the first element of the queue
         //Reference: https://www.redblobgames.com/pathfinding/a-star/introduction.html
         //           https://www.youtube.com/watch?v=oDqjPvD54Ss
         //           https://www.youtube.com/watch?v=-L-WgKMFuhE&t=125s
         void ShortestPath()
         {
-            while (cellsToVisit.Count > 0)
+            while (nodesToVisit.Count > 0)
             {
-                Position current = cellsToVisit.Dequeue();
-                foreach (Position pos in GetNeighbours(current))
+                Node current = nodesToVisit.Dequeue();
+                foreach (Node neighbour in GetNeighbours(current))
                 {
-                    if (!CheckIfVisited(pos))
+                    if (!CheckIfVisited(neighbour))
                     {
-                        cellsToVisit.Enqueue(pos);
-                        visitedCells.Add(pos);
+                        nodesToVisit.Enqueue(neighbour);
+                        visitedNodes.Add(neighbour);
                         if (!cameFrom.Contains(current))
                             cameFrom.Add(current);
                     }
 
-                    if (pos.type == "E")
+                    if (neighbour.type == "E")
                     {
-                        endPosition = pos;
+                        endNode = neighbour;
                         endFound = true;
                         break;
                     }
@@ -243,31 +250,7 @@ namespace Activity1
             }
         }
 
-        //Creates the path that first reached the End Point by looping backwards
-        //and checking if the position is connected to the parent
-        //once the position reaches the starting point, reverse the finalPath and display it
-        void ConstructFinalPath(string message)
-        {
-            Console.WriteLine("\n\n");
-            List<Position> finalPath = new List<Position>();
-            finalPath.Add(endPosition);
-            for (int i = cameFrom.Count - 1; i >= 0; i--)
-            {
-                //if the last added element(position) is connected to the current i position
-                if (IsParent(finalPath.Last(), cameFrom[i]))
-                    finalPath.Add(cameFrom[i]);
-
-                if (posGridMap[cameFrom[i].row][cameFrom[i].col].type == "S")
-                    break;
-            }
-            finalPath.Reverse();
-
-            Console.WriteLine($"{message}: {finalPath.Count}");
-            foreach (var p in finalPath)
-                Console.Write($"{p.row}, {p.col} |");
-        }
-
-        bool IsParent(Position current, Position parent)
+        bool IsParent(Node current, Node parent)
         {
             for (int i = 0; i < 4; i++)
                 if (current.col + dirCol[i] == parent.col && current.row + dirRow[i] == parent.row)
@@ -276,18 +259,19 @@ namespace Activity1
             return false;
         }
 
-        bool CheckIfVisited(Position neighbour)
+        bool CheckIfVisited(Node neighbour)
         {
-            foreach (Position vPos in visitedCells)
-                if (vPos.row == neighbour.row && vPos.col == neighbour.col)
+            //vNode = visited Node
+            foreach (Node vNode in visitedNodes)
+                if (vNode.row == neighbour.row && vNode.col == neighbour.col)
                     return true;
             return false;
         }
 
-        //Returns an array of positions adjacent to the current position
-        Position[] GetNeighbours(Position current)
+        //Returns an array of nodes adjacent to the current node
+        Node[] GetNeighbours(Node current)
         {
-            List<Position> unvisitedNeighbours = new List<Position>();
+            List<Node> unvisitedNeighbours = new List<Node>();
 
             for (int i = 0; i < 4; i++)
             {
@@ -299,14 +283,14 @@ namespace Activity1
                     continue;
                 if (newRow > gridRowSize - 1 || newCol > gridColSize - 1)
                     continue;
-                //check if position is an obstacle
-                if (posGridMap[newRow][newCol].type == "O")
+                //check if the node at that position is an obstacle
+                if (GridMap[newRow][newCol].type == "O")
                     continue;
 
-                Position pos = posGridMap[newRow][newCol];
-                pos.row = newRow;
-                pos.col = newCol;
-                unvisitedNeighbours.Add(pos);
+                Node node = GridMap[newRow][newCol];
+                node.row = newRow;
+                node.col = newCol;
+                unvisitedNeighbours.Add(node);
             }
 
             return unvisitedNeighbours.ToArray();
@@ -320,51 +304,52 @@ namespace Activity1
         {
             //init
             //new list of tolookat
-            //find neighbour cells from start
+            //find neighbour nodes from start
             //add them to tolookat list
             //set the cost of reaching them
 
-            //initializing the list with the neighbours of Start Point
-            List<Position> toLookAt = new List<Position>();
-            foreach (Position neighbour in GetNeighbours(startPosition))
+            //initializing the list with the neighbours of startPoint
+            List<Node> toLookAt = new List<Node>();
+            foreach (Node neighbour in GetNeighbours(startNode))
             {
-                Position nPos = minCostPosition(startPosition, neighbour);
-                toLookAt.Add(nPos);
+                Node neighbourNode = minCostNode(startNode, neighbour);
+                toLookAt.Add(neighbourNode);
             }
 
             //in a while loop
-            //loop through the tolookat list and find the cheapest cell
-            //check the cost of reaching that cell
-            //if it's cheap set it as that value
-            //find neighbour cells from cheapest
+            //loop through the tolookat list and find the cheapest node
+            //find the neighbouring nodes of the cheapest nodes
+            //check if that neighbour is already visited
+            //if not, set the cost to get to that neighbour
+            //check if that neighbour is the endPoint
             while (toLookAt.Count > 0)
             {
-                Position cheapestPos = toLookAt[0];
-                foreach (Position toLookPos in toLookAt)
-                    if (toLookPos.cost < cheapestPos.cost)
-                        cheapestPos = toLookPos;
+                Node cheapestNode = toLookAt[0];
+                foreach (Node toLookNode in toLookAt)
+                    if (toLookNode.cost < cheapestNode.cost)
+                        cheapestNode = toLookNode;
 
-                foreach (Position neighbour in GetNeighbours(cheapestPos))
+                foreach (Node neighbour in GetNeighbours(cheapestNode))
                 {
                     if (!CheckIfVisited(neighbour))
                     {
-                        Position nPos = minCostPosition(cheapestPos, neighbour);
-                        toLookAt.Add(nPos);
+                        Node neighbourNode = minCostNode(cheapestNode, neighbour);
+                        toLookAt.Add(neighbourNode);
 
-                        if (!cameFrom.Contains(cheapestPos))
-                            cameFrom.Add(cheapestPos);
+                        if (!cameFrom.Contains(cheapestNode))
+                            cameFrom.Add(cheapestNode);
                     }
 
                     if (neighbour.type == "E")
                     {
-                        endPosition = neighbour;
+                        endNode = neighbour;
                         endFound = true;
                         break;
                     }
                 }
 
-                toLookAt.Remove(cheapestPos);
-                visitedCells.Add(cheapestPos);
+                toLookAt.Remove(cheapestNode);
+                visitedNodes.Add(cheapestNode);
 
                 if (endFound)
                 {
@@ -374,39 +359,61 @@ namespace Activity1
             }
         }
 
-        Position minCostPosition(Position parent, Position current)
+        //checking if the cost to the node smaller than it already is
+        Node minCostNode(Node parent, Node current)
         {
-            Position pos = current;
             if (parent.costToPos + current.cost < current.costToPos)
-                pos.costToPos = parent.costToPos + current.cost;
-            //Console.WriteLine($"{pos.type} || {pos.row},{pos.col} || {pos.costToPos}");
-            return pos;
+                current.costToPos = parent.costToPos + current.cost;
+            return current;
         }
         #endregion
 
-        //loop through the gridMap to find the Start Point and set it as the first cell to visit
+        //loop through the gridMap to find the Start Point and set it as the first nodes to visit
         public void FindStartingPoint()
         {
             for (int row = 0; row < gridRowSize; row++)
                 for (int col = 0; col < gridColSize; col++)
-                    if (posGridMap[row][col].type == "S")
+                    if (GridMap[row][col].type == "S")
                     {
-                        startPosition = posGridMap[row][col];
-                        startPosition.costToPos = 0;
-                        cellsToVisit.Enqueue(startPosition);
-                        visitedCells.Add(startPosition);
-                        cameFrom.Add(startPosition);
+                        startNode = GridMap[row][col];
+                        startNode.costToPos = 0;
+                        nodesToVisit.Enqueue(startNode);
+                        visitedNodes.Add(startNode);
+                        cameFrom.Add(startNode);
                         return;
                     }
         }
 
-        Position GetPositionType(string type)
+        //Creates a path that first reached the End Point by looping through the cameFrom lsit backwards
+        //and checking if the current node is connected to any node in the list
+        //once the node reaches the starting point, reverse the finalPath and display it
+        void ConstructFinalPath(string message)
         {
-            foreach (Position pos in typesArray)
-                if (pos.type == type)
-                    return pos;
+            Console.WriteLine("\n\n");
+            List<Node> finalPath = new List<Node>();
+            finalPath.Add(endNode);
+            for (int i = cameFrom.Count - 1; i >= 0; i--)
+            {
+                //if the last added element(node) is connected to the current i node
+                if (IsParent(finalPath.Last(), cameFrom[i]))
+                    finalPath.Add(cameFrom[i]);
 
-            return new Position();
+                if (GridMap[cameFrom[i].row][cameFrom[i].col].type == "S")
+                    break;
+            }
+            finalPath.Reverse();
+
+            Console.WriteLine($"{message}: {finalPath.Count}");
+            foreach (var p in finalPath)
+                Console.Write($"{p.row}, {p.col} |");
+        }
+
+        Node GetNodeType(string type)
+        {
+            foreach (Node node in typesArray)
+                if (node.type == type)
+                    return node;
+            return new Node();
         }
 
         void DisplayLegend()
@@ -425,15 +432,15 @@ namespace Activity1
         }
     }
 
-    struct Position
+    struct Node
     {
         public string type;
-        public int col; //column
-        public int row; //row
+        public int col;         //column
+        public int row;         //row
         public int cost;
-        public int costToPos;
+        public int costToPos;   //setting the cost to maxValue, means that the noed has not been visited
 
-        public Position(string type, int col, int row)
+        public Node(string type, int col, int row)
         {
             this.type = type;
             this.col = col;
@@ -443,7 +450,7 @@ namespace Activity1
             costToPos = int.MaxValue;
         }
 
-        public Position(string type, int cost)
+        public Node(string type, int cost)
         {
             this.type = type;
             this.col = 0;

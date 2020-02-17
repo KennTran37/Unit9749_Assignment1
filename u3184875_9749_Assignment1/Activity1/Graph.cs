@@ -45,9 +45,9 @@ namespace Activity1
                         {
                             string type = $"{current.type}";
                             if (type == "S")
-                                WriteYellow(type);
+                                WriteColour(type, ConsoleColor.Yellow);
                             else if (type == "E")
-                                WriteRed(type);
+                                WriteColour(type, ConsoleColor.Red);
                             else
                                 Console.Write(type);
                             newSpaceInCol = spaceInCol - type.Length + 1;
@@ -93,16 +93,9 @@ namespace Activity1
             Console.Write("┘");
         }
 
-        public static void WriteRed(string message)
+        public static void WriteColour(string message, ConsoleColor color)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write(message);
-            Console.ResetColor();
-        }
-
-        public static void WriteYellow(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = color;
             Console.Write(message);
             Console.ResetColor();
         }

@@ -17,11 +17,13 @@ namespace Activity1
             new Node("W", 1), new Node("O", int.MaxValue), new Node("Ww", 6), new Node("Wg", 3), new Node("Wr", 4)
         };
 
-        //public List<List<string>> gridMap = new List<List<string>>();
-        public List<List<Node>> GridMap = new List<List<Node>>();
+        List<List<Node>> gridMap = new List<List<Node>>();
+        public List<List<Node>> GridMap { get => gridMap; }
 
-        int gridRowSize = 5;
-        int gridColSize = 5;
+        int gridRowSize = 3;
+        int gridColSize = 3;
+        public int GridColSize { get => gridColSize; }
+        public int GridRowSize { get => gridRowSize; }
 
         //used to look at the neighbouring nodes
         int[] dirRow = { -1, 1, 0, 0 }; //direction in row
@@ -39,11 +41,20 @@ namespace Activity1
         {
             string userInput = mainClass.GetUserInput();
 
-            mainClass.FindStartingPoint();
-            mainClass.ShortestPath();
+            //mainClass.FindStartingPoint();
+            //mainClass.ShortestPath();
 
-            mainClass.ResetLists();
-            mainClass.EasiestPath();
+            //mainClass.ResetLists();
+            //mainClass.EasiestPath();
+
+            Graph.DrawTop();
+            for (int row = 0; row < mainClass.gridRowSize; row++)
+            {
+                Graph.DrawMidSpacer(row);
+                if (row < mainClass.gridRowSize - 1)
+                    Graph.DrawMiddle();
+            }
+            Graph.DrawBottom();
 
             Console.ReadKey();
         }
@@ -133,23 +144,23 @@ namespace Activity1
 
         bool IsValidColumnsAndTypes(List<string> rowList)
         {
-            int prevColCount = 0;   
+            int prevColCount = 0;
             int startIndex = 0;
             string sub = null;
             //making sure that there is only one Start and End Point
             int numOfS = 0;
             int numOfE = 0;
 
-            mainClass.GridMap = new List<List<Node>>();
+            mainClass.gridMap = new List<List<Node>>();
             foreach (string row in rowList)
             {
-                GridMap.Add(new List<Node>());
+                gridMap.Add(new List<Node>());
                 startIndex = 0;
                 int currentColCount = 0;
                 for (int i = 0; i < row.Length; i++)
                 {
                     if (row[i] == ',' || i == row.Length - 1)
-                    {   
+                    {
                         sub = row.Substring(startIndex, (i + (i == row.Length - 1 ? 1 : 0)) - startIndex);
                         //cutting up the row of strings then checking to see if it is a valid type
                         if (!IsValidType(sub))
@@ -166,7 +177,7 @@ namespace Activity1
                         Node node = GetNodeType(sub);
                         node.row = rowList.IndexOf(row);
                         node.col = currentColCount;
-                        mainClass.GridMap.Last().Add(node);
+                        mainClass.gridMap.Last().Add(node);
 
                         startIndex += sub.Length + 1;
                         currentColCount++;
@@ -284,10 +295,10 @@ namespace Activity1
                 if (newRow > gridRowSize - 1 || newCol > gridColSize - 1)
                     continue;
                 //check if the node at that position is an obstacle
-                if (GridMap[newRow][newCol].type == "O")
+                if (gridMap[newRow][newCol].type == "O")
                     continue;
 
-                Node node = GridMap[newRow][newCol];
+                Node node = gridMap[newRow][newCol];
                 node.row = newRow;
                 node.col = newCol;
                 unvisitedNeighbours.Add(node);
@@ -373,9 +384,9 @@ namespace Activity1
         {
             for (int row = 0; row < gridRowSize; row++)
                 for (int col = 0; col < gridColSize; col++)
-                    if (GridMap[row][col].type == "S")
+                    if (gridMap[row][col].type == "S")
                     {
-                        startNode = GridMap[row][col];
+                        startNode = gridMap[row][col];
                         startNode.costToPos = 0;
                         nodesToVisit.Enqueue(startNode);
                         visitedNodes.Add(startNode);
@@ -398,7 +409,7 @@ namespace Activity1
                 if (IsParent(finalPath.Last(), cameFrom[i]))
                     finalPath.Add(cameFrom[i]);
 
-                if (GridMap[cameFrom[i].row][cameFrom[i].col].type == "S")
+                if (gridMap[cameFrom[i].row][cameFrom[i].col].type == "S")
                     break;
             }
             finalPath.Reverse();
@@ -429,35 +440,6 @@ namespace Activity1
             //Ww - Represents walkable squares via WATER
             //Wg - Represents walkable squares via GRASS
             //Wr - Represents ROCKY walkable squares
-        }
-    }
-
-    struct Node
-    {
-        public string type;
-        public int col;         //column
-        public int row;         //row
-        public int cost;
-        public int costToPos;   //setting the cost to maxValue, means that the noed has not been visited
-
-        public Node(string type, int col, int row)
-        {
-            this.type = type;
-            this.col = col;
-            this.row = row;
-
-            cost = 0;
-            costToPos = int.MaxValue;
-        }
-
-        public Node(string type, int cost)
-        {
-            this.type = type;
-            this.col = 0;
-            this.row = 0;
-
-            this.cost = cost;
-            costToPos = int.MaxValue;
         }
     }
 }

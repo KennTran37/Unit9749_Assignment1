@@ -28,5 +28,7 @@
             this.cost = cost;
             costToPos = int.MaxValue;
         }
+
+        public string Position() => $"{row},{col}";
     }
 }

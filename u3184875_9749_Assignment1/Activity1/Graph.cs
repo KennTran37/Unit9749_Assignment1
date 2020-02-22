@@ -32,7 +32,7 @@ namespace Activity1
                 for (int col = 0; col < gridCol; col++)
                 {
                     int newSpaceInCol = spaceInCol;
-                    Node current = Program.mainClass.GridMap[row][col];
+                    Node current = Program.GridMap[row][col];
                     for (int spaceCol = 0; spaceCol < newSpaceInCol; spaceCol++)
                     {
                         if (spaceRow == 0 && spaceCol == 1)

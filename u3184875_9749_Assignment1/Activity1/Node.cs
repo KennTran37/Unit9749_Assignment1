@@ -1,7 +1,7 @@
 ﻿namespace Activity1
 {
     //Used to contain the data of a node on the graph
-    struct Node
+    public struct Node
     {
         public string type;
         public int col;         //column

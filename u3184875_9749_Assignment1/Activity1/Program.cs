@@ -42,34 +42,21 @@ namespace Activity1
         static void Main(string[] args)
         {
             string userInput = mainClass.GetUserInput();
-
-            Console.WriteLine();
-            for (int row = 0; row < mainClass.gridRowSize; row++)
-            {
-                for (int col = 0; col < mainClass.gridColSize; col++)
-                    Console.Write($"{mainClass.gridMap[row][col].type}:({mainClass.gridMap[row][col].Position()})-{mainClass.gridMap[row][col].cost}  ");
-                Console.WriteLine();
-            }
-
-            Console.WriteLine();
             mainClass.FindStartingPoint();
-            mainClass.HardestPath(null, new List<Node>());
+
+            Console.WriteLine("\nShortest Path");
+            mainClass.ShortestPath();
+
+            Console.WriteLine("\nEasiet Path");
+            mainClass.EasiestPath();
+           mainClass.PrintPath(mainClass.possiblePaths.Last());
+
+            Console.WriteLine("\nAverage Path");
+            mainClass.AveragePath();
+
+            Console.WriteLine("\nHardest Path");
+            mainClass.HardestPath();
             Console.WriteLine();
-
-            //starting the search from the neighbours of startPoint because it will give more results
-            //foreach (Node neighbour in mainClass.GetNeighbours(mainClass.startNode))
-            //{
-            //    Queue<Node> toVisit = new Queue<Node>();
-            //    toVisit.Enqueue(neighbour);
-            //    mainClass.FindShortestPath(toVisit, new List<Node>() { mainClass.startNode, neighbour }, new List<Node>() { mainClass.startNode, neighbour });
-            //}
-
-            //mainClass.ResetLists();
-            //mainClass.EasiestPath();
-
-            //Console.WriteLine();
-            //mainClass.AveragePath();
-            //Console.WriteLine();
 
             Graph.DrawTop();
             for (int row = 0; row < mainClass.gridRowSize; row++)
@@ -248,13 +235,36 @@ namespace Activity1
         }
         #endregion
 
-        #region Shortest Path w/ Breath First Search
+        #region Shortest Path - Breath First Search
+        void ShortestPath()
+        {
+            //starting the search from the neighbours of startPoint because it will give more results
+            List<List<Node>> possibleShortestPaths = new List<List<Node>>();
+            foreach (Node neighbour in GetNeighbours(startNode))
+            {
+                Queue<Node> toVisit = new Queue<Node>();
+                toVisit.Enqueue(neighbour);
+
+                List<Node> path = GetShortestPath(toVisit, new List<Node>() { startNode, neighbour }, new List<Node>() { startNode, neighbour });
+                if (path != null)
+                    possibleShortestPaths.Add(path);
+            }
+
+            List<Node> shortestPath = possibleShortestPaths.First();
+            foreach (var path in possibleShortestPaths)
+                if (path.Count < shortestPath.Count)
+                    shortestPath = path;
+
+            BuildPath(shortestPath);
+            PrintPath(possiblePaths.Last());
+        }
+
         //Finds the shortest path to the End Point using the 'Breadth First Search Algorithm'
         //While the nodesToVisit queue isnt empty, look at the neighbouring node at the first element of the queue
         //Reference: https://www.redblobgames.com/pathfinding/a-star/introduction.html
         //           https://www.youtube.com/watch?v=oDqjPvD54Ss
         //           https://www.youtube.com/watch?v=-L-WgKMFuhE&t=125s
-        void FindShortestPath(Queue<Node> toVisit, List<Node> visited, List<Node> parents)
+        List<Node> GetShortestPath(Queue<Node> toVisit, List<Node> visited, List<Node> parents)
         {
             while (toVisit.Count > 0)
             {
@@ -272,52 +282,16 @@ namespace Activity1
                     if (neighbour.type == "E")
                     {
                         endNode = neighbour;
-                        BuildPath(parents);
-                        return;
+                        //BuildPath(parents);
+                        return parents;
                     }
                 }
             }
-        }
-
-        bool IsParent(Node current, Node parent)
-        {
-            for (int i = 0; i < 4; i++)
-                if (current.col + dirCol[i] == parent.col && current.row + dirRow[i] == parent.row)
-                    return true;
-
-            return false;
-        }
-
-        //Returns an array of nodes adjacent to the current node
-        Node[] GetNeighbours(Node current)
-        {
-            List<Node> unvisitedNeighbours = new List<Node>();
-
-            for (int i = 0; i < 4; i++)
-            {
-                int newRow = current.row + dirRow[i];
-                int newCol = current.col + dirCol[i];
-
-                //check if the positions are in bounds
-                if (newRow < 0 || newCol < 0)
-                    continue;
-                if (newRow > gridRowSize - 1 || newCol > gridColSize - 1)
-                    continue;
-                //check if the node at that position is an obstacle
-                if (gridMap[newRow][newCol].type == "O")
-                    continue;
-
-                Node node = gridMap[newRow][newCol];
-                node.row = newRow;
-                node.col = newCol;
-                unvisitedNeighbours.Add(node);
-            }
-
-            return unvisitedNeighbours.ToArray();
+            return null;
         }
         #endregion
 
-        #region Easiest Path \w Prim's Algorithm
+        #region Easiest Path - Dijkstra's Algorithm
         //Dijkstra's Algorithm
         //References: https://youtu.be/K_1urzWrzLs
         void EasiestPath()
@@ -373,7 +347,7 @@ namespace Activity1
 
                 if (endFound)
                 {
-                    ConstructFinalPath("Steps taken for Easiest Path");
+                    BuildPath(cameFrom);
                     break;
                 }
             }
@@ -400,9 +374,9 @@ namespace Activity1
                         if (!ContainsNode(commonNodes, possiblePaths[path][node]))
                             commonNodes.Add(possiblePaths[path][node]);
 
-            Console.WriteLine("Average Path: \n");
             foreach (var node in commonNodes)
                 Console.Write($"({node.Position()})");
+            Console.WriteLine();
         }
 
         bool ContainsNode(List<Node> commonNodes, Node target)
@@ -414,8 +388,40 @@ namespace Activity1
         }
         #endregion
 
+        #region Hardest Path - Prim's Algorithm
+        void HardestPath()
+        {
+            GetHardestPath(null, new List<Node>());
+
+            List<Node> hardestPath = possiblePaths.First();
+            foreach (var path in possiblePaths)
+            {
+                if (path.Count == hardestPath.Count)
+                {
+                    if (totalPathCost(path) > totalPathCost(hardestPath))
+                        hardestPath = path;
+                    continue;
+                }
+
+                if (path.Count > hardestPath.Count)
+                    hardestPath = path;
+            }
+
+            BuildPath(hardestPath);
+            PrintPath(possiblePaths.Last());
+        }
+
+        int totalPathCost(List<Node> path)
+        {
+            int totalCost = 0;
+            foreach (var node in path)
+                totalCost += node.cost;
+
+            return totalCost;
+        }
+
         //Using Prim's Algorithm in an Recursive Method
-        void HardestPath(List<Node> toLookAt, List<Node> visited)
+        void GetHardestPath(List<Node> toLookAt, List<Node> visited)
         {
             //init toLookAt list with startNode neighbours
             //add startNode to visited list
@@ -469,10 +475,11 @@ namespace Activity1
                     if (toLookAt.Count == 0)
                         break;
                     if (toLookAt[i].cost == expensiveNode.cost)
-                        HardestPath(toLookAt, visited);
+                        GetHardestPath(toLookAt, visited);
                 }
             }
         }
+        #endregion
 
         //loop through the gridMap to find the Start Point and set it as the first nodes to visit
         public void FindStartingPoint()
@@ -493,28 +500,6 @@ namespace Activity1
         //Creates a path that first reached the End Point by looping through the cameFrom lsit backwards
         //and checking if the current node is connected to any node in the list
         //once the node reaches the starting point, reverse the finalPath and display it
-        void ConstructFinalPath(string message)
-        {
-            Console.WriteLine("\n\n");
-            List<Node> finalPath = new List<Node>();
-            finalPath.Add(endNode);
-            for (int i = cameFrom.Count - 1; i >= 0; i--)
-            {
-                //if the last added element(node) is connected to the current i node
-                if (IsParent(finalPath.Last(), cameFrom[i]))
-                    finalPath.Add(cameFrom[i]);
-
-                if (gridMap[cameFrom[i].row][cameFrom[i].col].type == "S")
-                    break;
-            }
-            finalPath.Reverse();
-
-            Console.WriteLine($"{message}: {finalPath.Count}");
-            foreach (var p in finalPath)
-                Console.Write($"{p.row}, {p.col} |");
-            possiblePaths.Add(finalPath);
-        }
-
         void BuildPath(List<Node> parents)
         {
             List<Node> finalPath = new List<Node>();
@@ -530,9 +515,23 @@ namespace Activity1
             }
             finalPath.Reverse();
 
-            Console.WriteLine();
-            foreach (var p in finalPath)
+            possiblePaths.Add(finalPath);
+        }
+
+        void PrintPath(List<Node> path)
+        {
+            foreach (var p in path)
                 Console.Write($"({p.Position()})");
+            Console.WriteLine();
+        }
+
+        bool IsParent(Node current, Node parent)
+        {
+            for (int i = 0; i < 4; i++)
+                if (current.col + dirCol[i] == parent.col && current.row + dirRow[i] == parent.row)
+                    return true;
+
+            return false;
         }
 
         bool HasVisited(Node neighbour, List<Node> visitedList)
@@ -541,6 +540,34 @@ namespace Activity1
                 if (vNode.Position() == neighbour.Position())
                     return true;
             return false;
+        }
+
+        //Returns an array of nodes adjacent to the current node
+        Node[] GetNeighbours(Node current)
+        {
+            List<Node> unvisitedNeighbours = new List<Node>();
+
+            for (int i = 0; i < 4; i++)
+            {
+                int newRow = current.row + dirRow[i];
+                int newCol = current.col + dirCol[i];
+
+                //check if the positions are in bounds
+                if (newRow < 0 || newCol < 0)
+                    continue;
+                if (newRow > gridRowSize - 1 || newCol > gridColSize - 1)
+                    continue;
+                //check if the node at that position is an obstacle
+                if (gridMap[newRow][newCol].type == "O")
+                    continue;
+
+                Node node = gridMap[newRow][newCol];
+                node.row = newRow;
+                node.col = newCol;
+                unvisitedNeighbours.Add(node);
+            }
+
+            return unvisitedNeighbours.ToArray();
         }
 
         Node GetNodeType(string type)

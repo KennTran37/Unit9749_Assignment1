@@ -9,7 +9,7 @@ namespace Activity1
 {
     class Program
     {
-        public static Program mainClass = new Program();
+        public static Program actOne = new Program();
         public static Random randomClass = new Random();
 
         Node[] typesArray =
@@ -21,18 +21,11 @@ namespace Activity1
         public Node[] TypesArray { get => typesArray; }
 
         List<List<Node>> gridMap = new List<List<Node>>();
-        public static List<List<Node>> GridMap 
-        { 
-            get => mainClass.gridMap; 
-            set => mainClass.gridMap = value; 
-        }
 
         int gridRowSize = 3;
         int gridColSize = 3;
-        public int GridColSize { get => gridColSize; set => gridColSize = value; }
-        public int GridRowSize { get => gridRowSize; set => gridRowSize = value; }
 
-        //used to look at the neighbouring nodes
+        //used to look at the adjacent neighbour nodes
         int[] dirRow = { -1, 1, 0, 0 }; //direction in row
         int[] dirCol = { 0, 0, 1, -1 }; //direction in coloumn
 
@@ -47,33 +40,26 @@ namespace Activity1
 
         static void Main(string[] args)
         {
-            string userInput = UserInput.GetUserInput();
+            string userInput = UserInput.GetUserInput(out actOne.gridRowSize, out actOne.gridColSize, out actOne.gridMap);
             Console.Clear();
             Console.WriteLine($"\n\t{userInput}\n");
 
-            mainClass.FindStartingPoint();
+            actOne.FindStartingPoint();
             Console.WriteLine("\nShortest Path");
-            mainClass.ShortestPath();
+            actOne.ShortestPath();
 
             Console.WriteLine("\nEasiet Path");
-            mainClass.EasiestPath();
-            mainClass.PrintPath(mainClass.possiblePaths.Last());
+            actOne.EasiestPath();
+            actOne.PrintPath(actOne.possiblePaths.Last());
 
             Console.WriteLine("\nAverage Path");
-            mainClass.AveragePath();
+            actOne.AveragePath();
 
             Console.WriteLine("\nHardest Path");
-            mainClass.HardestPath();
+            actOne.HardestPath();
             Console.WriteLine();
 
-            Graph.DrawTop();
-            for (int row = 0; row < mainClass.gridRowSize; row++)
-            {
-                Graph.DrawMidSpacer(row);
-                if (row < mainClass.gridRowSize - 1)
-                    Graph.DrawMiddle();
-            }
-            Graph.DrawBottom();
+            Graph.BuildGraph(actOne.gridMap, actOne.gridRowSize, actOne.gridColSize);
 
             Console.ReadKey();
         }
@@ -83,7 +69,7 @@ namespace Activity1
         {
             //starting the search from the neighbours of startPoint because it will give more results
             List<List<Node>> possibleShortestPaths = new List<List<Node>>();
-            foreach (Node neighbour in GetNeighbours(startNode))
+            foreach (Node neighbour in GetAdjacentNeighbours(startNode))
             {
                 Queue<Node> toVisit = new Queue<Node>();
                 toVisit.Enqueue(neighbour);
@@ -112,7 +98,7 @@ namespace Activity1
             while (toVisit.Count > 0)
             {
                 Node current = toVisit.Dequeue();
-                foreach (Node neighbour in GetNeighbours(current))
+                foreach (Node neighbour in GetAdjacentNeighbours(current))
                 {
                     if (!HasVisited(neighbour, visited))
                     {
@@ -147,7 +133,7 @@ namespace Activity1
 
             //initializing the list with the neighbours of startPoint
             List<Node> toLookAt = new List<Node>();
-            foreach (Node neighbour in GetNeighbours(startNode))
+            foreach (Node neighbour in GetAdjacentNeighbours(startNode))
             {
                 Node neighbourNode = minCostNode(startNode, neighbour);
                 toLookAt.Add(neighbourNode);
@@ -166,7 +152,7 @@ namespace Activity1
                     if (toLookNode.cost < cheapestNode.cost)
                         cheapestNode = toLookNode;
 
-                foreach (Node neighbour in GetNeighbours(cheapestNode))
+                foreach (Node neighbour in GetAdjacentNeighbours(cheapestNode))
                 {
                     if (!HasVisited(neighbour, visitedNodes))
                     {
@@ -264,6 +250,7 @@ namespace Activity1
         }
 
         //Using Prim's Algorithm in an Recursive Method
+        //References: https://youtu.be/K_1urzWrzLs
         void GetHardestPath(List<Node> toLookAt, List<Node> visited)
         {
             //init toLookAt list with startNode neighbours
@@ -285,7 +272,7 @@ namespace Activity1
             {
                 toLookAt = new List<Node>();
                 visited.Add(startNode);
-                foreach (Node neighbour in GetNeighbours(startNode))
+                foreach (Node neighbour in GetAdjacentNeighbours(startNode))
                     toLookAt.Add(neighbour);
             }
 
@@ -299,7 +286,7 @@ namespace Activity1
                 visited.Add(expensiveNode);
                 toLookAt.Remove(expensiveNode);
 
-                foreach (Node neighbour in GetNeighbours(expensiveNode))
+                foreach (Node neighbour in GetAdjacentNeighbours(expensiveNode))
                 {
                     if (!HasVisited(neighbour, visited))
                         toLookAt.Add(neighbour);
@@ -387,7 +374,7 @@ namespace Activity1
         }
 
         //Returns an array of nodes adjacent to the current node
-        Node[] GetNeighbours(Node current)
+        Node[] GetAdjacentNeighbours(Node current)
         {
             List<Node> unvisitedNeighbours = new List<Node>();
 
@@ -412,14 +399,6 @@ namespace Activity1
             }
 
             return unvisitedNeighbours.ToArray();
-        }
-
-        public Node GetNodeType(string type)
-        {
-            foreach (Node node in typesArray)
-                if (node.type == type)
-                    return node;
-            return new Node();
         }
         #endregion
     }

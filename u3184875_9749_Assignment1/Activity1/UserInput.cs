@@ -4,11 +4,15 @@ using System.Collections.Generic;
 namespace Activity1
 {
     //Separate class so that it is more readable and easy to scroll through
-    class UserInput
+    public class UserInput
     {
+        static List<List<Node>> gridMap = new List<List<Node>>();
+        static int newRow;
+        static int newCol;
+
         //Returns the user's input after checking in a while loop,if the input is null or empty,
         //if the rows and columns have a valid amount, and whether the types are valid
-        public static string GetUserInput()
+        public static string GetUserInput(out int row, out int col, out List<List<Node>> newMap)
         {
             string input = null;
 
@@ -41,6 +45,9 @@ namespace Activity1
                 break;
             }
 
+            row = newRow;
+            col = newCol;
+            newMap = gridMap;
             return input;
         }
 
@@ -85,10 +92,10 @@ namespace Activity1
             int numOfS = 0;
             int numOfE = 0;
 
-            Program.GridMap = new List<List<Node>>();
+            gridMap = new List<List<Node>>();
             foreach (string row in rowList)
             {
-                Program.GridMap.Add(new List<Node>());
+                gridMap.Add(new List<Node>());
                 startIndex = 0;
                 int currentColCount = 0;
                 for (int i = 0; i < row.Length; i++)
@@ -108,10 +115,10 @@ namespace Activity1
                         if (sub == "E")
                             numOfE++;
 
-                        Node node = Program.mainClass.GetNodeType(sub);
+                        Node node = GetNodeType(sub);
                         node.row = rowList.IndexOf(row);
                         node.col = currentColCount;
-                        Program.GridMap[Program.GridMap.Count - 1].Add(node);
+                        gridMap[gridMap.Count - 1].Add(node);
 
                         startIndex += sub.Length + 1;
                         currentColCount++;
@@ -142,8 +149,8 @@ namespace Activity1
                 return false;
             }
 
-            Program.mainClass.GridColSize = prevColCount;
-            Program.mainClass.GridRowSize = rowList.Count;
+            newCol = prevColCount;
+            newRow = rowList.Count;
 
             return true;
         }
@@ -151,10 +158,18 @@ namespace Activity1
         //Loop through the array of types and check if the user's type is valid
         static bool IsValidType(string userType)
         {
-            foreach (Node type in Program.mainClass.TypesArray)
+            foreach (Node type in Program.actOne.TypesArray)
                 if (userType == type.type)
                     return true;
             return false;
+        }
+
+        static Node GetNodeType(string type)
+        {
+            foreach (Node node in Program.actOne.TypesArray)
+                if (node.type == type)
+                    return node;
+            return new Node();
         }
     }
 }

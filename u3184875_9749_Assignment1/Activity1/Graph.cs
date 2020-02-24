@@ -1,14 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Activity1
 {
     //Source: https://stackoverflow.com/a/45221670
-    public static class Graph
+    public class Graph
     {
         public static int spaceInCol = 7;
         public static int spaceInRow = 3;
 
-        public static int gridCol = Program.mainClass.GridColSize;
+        static List<List<Node>> gridMap = new List<List<Node>>();
+        public static int gridCol;
+
+        public static void BuildGraph(List<List<Node>> map ,int gridRow, int _gridCol)
+        {
+            gridCol = _gridCol;
+            gridMap = map;
+
+            DrawTop();
+            for (int row = 0; row < gridRow; row++)
+            {
+                DrawMidSpacer(row);
+                if (row < gridRow - 1)
+                    DrawMiddle();
+            }
+            DrawBottom();
+        }
 
         public static void DrawTop()
         {
@@ -32,7 +49,7 @@ namespace Activity1
                 for (int col = 0; col < gridCol; col++)
                 {
                     int newSpaceInCol = spaceInCol;
-                    Node current = Program.GridMap[row][col];
+                    Node current = gridMap[row][col];
                     for (int spaceCol = 0; spaceCol < newSpaceInCol; spaceCol++)
                     {
                         if (spaceRow == 0 && spaceCol == 1)

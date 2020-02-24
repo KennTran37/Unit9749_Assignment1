@@ -9,6 +9,9 @@
         public int cost;
         public int costToPos;   //setting the cost to maxValue, means that the noed has not been visited
 
+        public int parentCol;
+        public int parentRow;
+
         public Node(string type, int col, int row)
         {
             this.type = type;
@@ -17,6 +20,8 @@
 
             cost = 0;
             costToPos = int.MaxValue;
+            parentCol = 0;
+            parentRow = 0;
         }
 
         public Node(string type, int cost)
@@ -27,8 +32,16 @@
 
             this.cost = cost;
             costToPos = int.MaxValue;
+            parentCol = 0;
+            parentRow = 0;
         }
 
         public string Position() => $"{row},{col}";
+        public string ParentPos() => $"{parentRow},{parentCol}";
+        public void SetParentPos(int pRow, int pCol)
+        {
+            parentRow = pRow;
+            parentCol = pCol;
+        }
     }
 }

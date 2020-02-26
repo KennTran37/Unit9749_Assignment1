@@ -74,7 +74,7 @@ namespace Activity1
                     possibleShortestPaths.Add(path);
             }
 
-            List<Node> shortestPath = possibleShortestPaths.First();
+            List<Node> shortestPath = possibleShortestPaths.Last();
             foreach (var path in possibleShortestPaths)
                 if (path.Count < shortestPath.Count)
                     shortestPath = path;

@@ -195,9 +195,7 @@ namespace Activity2
             finalPath.Reverse();
 
             foreach (var node in finalPath)
-            {
                 Console.Write($"({node.Position()})");
-            }
             Console.WriteLine();
         }
 

@@ -33,10 +33,6 @@ namespace Activity1
         Node endNode;
 
         List<List<Node>> possiblePaths = new List<List<Node>>();
-        List<Node> visitedNodes = new List<Node>();
-        List<Node> cameFrom = new List<Node>();
-        Queue<Node> nodesToVisit = new Queue<Node>();
-        bool endFound = false;
 
         static void Main(string[] args)
         {
@@ -49,7 +45,7 @@ namespace Activity1
             actOne.ShortestPath();
 
             Console.WriteLine("\nEasiet Path");
-            actOne.EasiestPath();
+            actOne.EasiestPath(new List<Node>(), new List<Node>());
             actOne.PrintPath(actOne.possiblePaths.Last());
 
             Console.WriteLine("\nAverage Path");
@@ -73,8 +69,7 @@ namespace Activity1
             {
                 Queue<Node> toVisit = new Queue<Node>();
                 toVisit.Enqueue(neighbour);
-
-                List<Node> path = GetShortestPath(toVisit, new List<Node>() { startNode, neighbour }, new List<Node>() { startNode, neighbour });
+                List<Node> path = GetShortestPath(toVisit, new List<Node>() { startNode, neighbour });
                 if (path != null)
                     possibleShortestPaths.Add(path);
             }
@@ -93,26 +88,25 @@ namespace Activity1
         //Reference: https://www.redblobgames.com/pathfinding/a-star/introduction.html
         //           https://www.youtube.com/watch?v=oDqjPvD54Ss
         //           https://www.youtube.com/watch?v=-L-WgKMFuhE&t=125s
-        List<Node> GetShortestPath(Queue<Node> toVisit, List<Node> visited, List<Node> parents)
+        List<Node> GetShortestPath(Queue<Node> toLookAt, List<Node> visited)
         {
-            while (toVisit.Count > 0)
+            while (toLookAt.Count > 0)
             {
-                Node current = toVisit.Dequeue();
+                Node current = toLookAt.Dequeue();
                 foreach (Node neighbour in GetAdjacentNeighbours(current))
                 {
-                    if (!HasVisited(neighbour, visited))
+                    if (!IsInList(neighbour, visited))
                     {
-                        toVisit.Enqueue(neighbour);
+                        toLookAt.Enqueue(neighbour);
+                        neighbour.SetParentPos(current.row, current.col);
                         visited.Add(neighbour);
-                        if (!parents.Contains(current))
-                            parents.Add(current);
                     }
 
                     if (neighbour.type == "E")
                     {
                         endNode = neighbour;
                         //BuildPath(parents);
-                        return parents;
+                        return visited;
                     }
                 }
             }
@@ -123,7 +117,7 @@ namespace Activity1
         #region Easiest Path - Dijkstra's Algorithm
         //Dijkstra's Algorithm
         //References: https://youtu.be/K_1urzWrzLs
-        void EasiestPath()
+        void EasiestPath(List<Node> toLookAt, List<Node> visited)
         {
             //init
             //new list of tolookat
@@ -132,7 +126,7 @@ namespace Activity1
             //set the cost of reaching them
 
             //initializing the list with the neighbours of startPoint
-            List<Node> toLookAt = new List<Node>();
+            visited.Add(startNode);
             foreach (Node neighbour in GetAdjacentNeighbours(startNode))
             {
                 Node neighbourNode = minCostNode(startNode, neighbour);
@@ -147,47 +141,49 @@ namespace Activity1
             //check if that neighbour is the endPoint
             while (toLookAt.Count > 0)
             {
-                Node cheapestNode = toLookAt[0];
-                foreach (Node toLookNode in toLookAt)
-                    if (toLookNode.cost < cheapestNode.cost)
-                        cheapestNode = toLookNode;
+                Node current = toLookAt.First();
+                foreach (Node node in toLookAt)
+                    if (node.costToPos < current.costToPos)
+                        current = node;
 
-                foreach (Node neighbour in GetAdjacentNeighbours(cheapestNode))
+                toLookAt.Remove(current);
+                visited.Add(current);
+
+                if (current.type == "E")
                 {
-                    if (!HasVisited(neighbour, visitedNodes))
-                    {
-                        Node neighbourNode = minCostNode(cheapestNode, neighbour);
-                        toLookAt.Add(neighbourNode);
-
-                        if (!cameFrom.Contains(cheapestNode))
-                            cameFrom.Add(cheapestNode);
-                    }
-
-                    if (neighbour.type == "E")
-                    {
-                        endNode = neighbour;
-                        endFound = true;
-                        break;
-                    }
+                    endNode = current;
+                    BuildPath(visited);
+                    return;
                 }
 
-                toLookAt.Remove(cheapestNode);
-                visitedNodes.Add(cheapestNode);
-
-                if (endFound)
+                foreach (Node neighbour in GetAdjacentNeighbours(current))
                 {
-                    BuildPath(cameFrom);
-                    break;
+                    if (!IsInList(neighbour, visited))
+                    {
+                        if (!IsInList(neighbour, toLookAt) || CheaperCost(current, neighbour))
+                        {
+                            Node neighbourNode = minCostNode(current, neighbour);
+                            neighbourNode.SetParentPos(current.row, current.col);
+                            if (!IsInList(neighbourNode, toLookAt))
+                                toLookAt.Add(neighbourNode);
+                        }
+                    }
                 }
             }
         }
 
-        //checking if the cost to the node is smaller than it already is
-        Node minCostNode(Node parent, Node current)
+        bool CheaperCost(Node parent, Node neighbour)
         {
-            if (parent.costToPos + current.cost < current.costToPos)
-                current.costToPos = parent.costToPos + current.cost;
-            return current;
+            if (parent.costToPos + neighbour.cost < neighbour.costToPos)
+                return true;
+            return false;
+        }
+
+        //checking if the cost to the node is smaller than it already is
+        Node minCostNode(Node parent, Node neighbour)
+        {
+            neighbour.costToPos = parent.costToPos + neighbour.cost;
+            return neighbour;
         }
         #endregion
 
@@ -220,94 +216,82 @@ namespace Activity1
         #region Hardest Path - Prim's Algorithm
         void HardestPath()
         {
-            GetHardestPath(null, new List<Node>());
-
-            List<Node> hardestPath = possiblePaths.First();
-            foreach (var path in possiblePaths)
-            {
-                if (path.Count == hardestPath.Count)
-                {
-                    if (totalPathCost(path) > totalPathCost(hardestPath))
-                        hardestPath = path;
-                    continue;
-                }
-
-                if (path.Count > hardestPath.Count)
-                    hardestPath = path;
-            }
-
-            BuildPath(hardestPath);
-            PrintPath(possiblePaths.Last());
-        }
-
-        int totalPathCost(List<Node> path)
-        {
-            int totalCost = 0;
-            foreach (var node in path)
-                totalCost += node.cost;
-
-            return totalCost;
+            HardPath(actOne.startNode, new List<Node>() { actOne.startNode }, new List<Node>());
+            PrintPath(actOne.possiblePaths.Last());
         }
 
         //Using Prim's Algorithm in an Recursive Method
         //References: https://youtu.be/K_1urzWrzLs
-        void GetHardestPath(List<Node> toLookAt, List<Node> visited)
+        //look at a node and find the most expensive node from the neighbours,
+        //if there are multiple expensive nodes recursive function with the other expensive node as the current node in the parameter
+        void HardPath(Node current, List<Node> toLookAt, List<Node> visited)
         {
-            //init toLookAt list with startNode neighbours
-            //add startNode to visited list
-            //while toLookAt isn't empty
-            //  find the most expensive node assigned to expensiveNode
-            //  add it to visited list and remove from toLookAt list
-            //  look at the neighbours from expensiveNode
-            //      check if neighbour hasn't been visited
-            //          add neighbour to toLookAt list
-            //      check if neighbour is end point
-            //          assign neighbour to endNode
-            //          add to visited list then call BuildPath with visited as the param 
-            //  looping through the toLookAt list
-            //      check if other nodes have the same cost as expensiveNode
-            //          Recursive funcation with toLookAt and visited lists as the param
+            //add current to visited list
+            //if current is end node
+            //  return
+            //for loop the neighbour nodes of current
+            //  find the most expensive node
+            //  if neighbour has not been visited
+            //      set the neighbour's parent to current
+            //find other same cost nodes from expensive node
+            //  recursive function with the other nodes
 
-            if (toLookAt is null)
+            visited.Add(current);
+            toLookAt.Remove(current);
+
+            Node[] neighbourNodes;
+            Node expensiveNode = GetExpensiveNode(current, visited, out neighbourNodes);
+            if (!string.IsNullOrEmpty(expensiveNode.type))
             {
-                toLookAt = new List<Node>();
-                visited.Add(startNode);
-                foreach (Node neighbour in GetAdjacentNeighbours(startNode))
-                    toLookAt.Add(neighbour);
-            }
-
-            while (toLookAt.Count > 0)
-            {
-                Node expensiveNode = toLookAt.Last();
-                foreach (Node lookAtNode in toLookAt)
-                    if (lookAtNode.cost > expensiveNode.cost)
-                        expensiveNode = lookAtNode;
-
-                visited.Add(expensiveNode);
-                toLookAt.Remove(expensiveNode);
-
-                foreach (Node neighbour in GetAdjacentNeighbours(expensiveNode))
+                if(expensiveNode.type == "E")
                 {
-                    if (!HasVisited(neighbour, visited))
-                        toLookAt.Add(neighbour);
+                    endNode = expensiveNode;
+                    visited.Add(expensiveNode);
+                    BuildPath(visited);
+                    return;
+                }
+
+                foreach (var neighbour in neighbourNodes)
+                    if (neighbour.row != expensiveNode.row && neighbour.col != expensiveNode.col)
+                        if (!IsInList(neighbour, toLookAt) && !IsInList(neighbour, visited))
+                        {
+                            neighbour.SetParentPos(current.row, current.col);
+                            toLookAt.Add(neighbour);
+                        }
+
+                HardPath(expensiveNode, toLookAt, visited);
+            }
+            else
+            {
+                if (toLookAt.Count > 0)
+                {
+                    expensiveNode = new Node();
+                    foreach (var node in toLookAt)
+                        if (node.cost > expensiveNode.cost)
+                            expensiveNode = node;
+                    HardPath(expensiveNode, toLookAt, visited);
+                }
+            }
+        }
+
+        Node GetExpensiveNode(Node current, List<Node> visited, out Node[] neighbourNodes)
+        {
+            Node expensiveNode = new Node();
+            neighbourNodes = GetAdjacentNeighbours(current);
+            foreach (var neighbour in neighbourNodes)
+            {
+                if (!IsInList(neighbour, visited))
+                {
+                    neighbour.SetParentPos(current.row, current.col);
+                    if (neighbour.cost > expensiveNode.cost)
+                        expensiveNode = neighbour;
 
                     if (neighbour.type == "E")
-                    {
-                        endNode = neighbour;
-                        visited.Add(neighbour);
-                        BuildPath(visited);
-                        return;
-                    }
-                }
-
-                for (int i = toLookAt.Count - 1; i >= 0; i--)
-                {
-                    if (toLookAt.Count == 0)
-                        break;
-                    if (toLookAt[i].cost == expensiveNode.cost)
-                        GetHardestPath(toLookAt, visited);
+                        return neighbour;
                 }
             }
+
+            return expensiveNode;
         }
         #endregion
 
@@ -321,9 +305,6 @@ namespace Activity1
                     {
                         startNode = gridMap[row][col];
                         startNode.costToPos = 0;
-                        nodesToVisit.Enqueue(startNode);
-                        visitedNodes.Add(startNode);
-                        cameFrom.Add(startNode);
                         return;
                     }
         }
@@ -337,11 +318,10 @@ namespace Activity1
             finalPath.Add(endNode);
             for (int i = parents.Count - 1; i >= 0; i--)
             {
-                //if the last added element(node) is connected to the current i node
-                if (IsParent(finalPath.Last(), parents[i]))
+                if (IsParent(finalPath.Last(), parents[i].row, parents[i].col))
                     finalPath.Add(parents[i]);
 
-                if (gridMap[parents[i].row][parents[i].col].type == "S")
+                if (parents[i].type == "S")
                     break;
             }
             finalPath.Reverse();
@@ -356,19 +336,17 @@ namespace Activity1
             Console.WriteLine();
         }
 
-        bool IsParent(Node current, Node parent)
+        bool IsParent(Node current, int pRow, int pCol)
         {
-            for (int i = 0; i < 4; i++)
-                if (current.col + dirCol[i] == parent.col && current.row + dirRow[i] == parent.row)
-                    return true;
-
+            if (current.parentRow == pRow && current.parentCol == pCol)
+                return true;
             return false;
         }
 
-        bool HasVisited(Node neighbour, List<Node> visitedList)
+        bool IsInList(Node neighbour, List<Node> list)
         {
-            foreach (Node vNode in visitedList)
-                if (vNode.Position() == neighbour.Position())
+            foreach (Node vNode in list)
+                if (vNode.row == neighbour.row && vNode.col == neighbour.col)
                     return true;
             return false;
         }

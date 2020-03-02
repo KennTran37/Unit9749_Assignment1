@@ -209,7 +209,7 @@ namespace Activity2
         bool IsInList(Node neighbour, List<Node> visitedList)
         {
             foreach (Node vNode in visitedList)
-                if (vNode.Position() == neighbour.Position())
+                if (vNode.IsEqualPosition(neighbour.row, neighbour.col))
                     return true;
             return false;
         }

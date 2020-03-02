@@ -12,14 +12,6 @@ namespace Activity1
         public static Program actOne = new Program();
         public static Random randomClass = new Random();
 
-        Node[] typesArray =
-        {
-            new Node("S", 0), new Node("E", 0), new Node("W40", 5), new Node("W90", 9), new Node("W120", 5), new Node("W0", 1),
-            new Node("W", 1), new Node("O", int.MaxValue), new Node("Ww", 6), new Node("Wg", 3), new Node("Wr", 4)
-        };
-
-        public Node[] TypesArray { get => typesArray; }
-
         List<List<Node>> gridMap = new List<List<Node>>();
 
         int gridRowSize = 3;
@@ -128,10 +120,7 @@ namespace Activity1
             //initializing the list with the neighbours of startPoint
             visited.Add(startNode);
             foreach (Node neighbour in GetAdjacentNeighbours(startNode))
-            {
-                Node neighbourNode = minCostNode(startNode, neighbour);
-                toLookAt.Add(neighbourNode);
-            }
+                toLookAt.Add(MinCostNode(startNode, neighbour));
 
             //in a while loop
             //loop through the tolookat list and find the cheapest node
@@ -162,7 +151,7 @@ namespace Activity1
                     {
                         if (!IsInList(neighbour, toLookAt) || CheaperCost(current, neighbour))
                         {
-                            Node neighbourNode = minCostNode(current, neighbour);
+                            Node neighbourNode = MinCostNode(current, neighbour);
                             neighbourNode.SetParentPos(current.row, current.col);
                             if (!IsInList(neighbourNode, toLookAt))
                                 toLookAt.Add(neighbourNode);
@@ -180,7 +169,7 @@ namespace Activity1
         }
 
         //checking if the cost to the node is smaller than it already is
-        Node minCostNode(Node parent, Node neighbour)
+        Node MinCostNode(Node parent, Node neighbour)
         {
             neighbour.costToPos = parent.costToPos + neighbour.cost;
             return neighbour;
@@ -204,10 +193,11 @@ namespace Activity1
             Console.WriteLine();
         }
 
-        bool ContainsNode(List<Node> commonNodes, Node target)
+        bool ContainsNode(List<Node> commonNodes, Node t)
         {
             foreach (Node commNode in commonNodes)
-                if (commNode.Position() == target.Position())
+                //if (commNode.Position() == target.Position())
+                if (commNode.IsEqualPosition(t.row, t.col))
                     return true;
             return false;
         }
@@ -243,7 +233,7 @@ namespace Activity1
             Node expensiveNode = GetExpensiveNode(current, visited, out neighbourNodes);
             if (!string.IsNullOrEmpty(expensiveNode.type))
             {
-                if(expensiveNode.type == "E")
+                if (expensiveNode.type == "E")
                 {
                     endNode = expensiveNode;
                     visited.Add(expensiveNode);

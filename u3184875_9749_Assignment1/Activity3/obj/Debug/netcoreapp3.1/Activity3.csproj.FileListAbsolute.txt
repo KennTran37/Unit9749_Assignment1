@@ -1,0 +1,15 @@
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity1.exe
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity3.exe
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity3.deps.json
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity3.runtimeconfig.json
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity3.runtimeconfig.dev.json
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity3.dll
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity3.pdb
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity1.dll
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\bin\Debug\netcoreapp3.1\Activity1.pdb
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\obj\Debug\netcoreapp3.1\Activity3.csprojAssemblyReference.cache
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\obj\Debug\netcoreapp3.1\Activity3.AssemblyInfoInputs.cache
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\obj\Debug\netcoreapp3.1\Activity3.AssemblyInfo.cs
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\obj\Debug\netcoreapp3.1\Activity3.csproj.CopyComplete
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\obj\Debug\netcoreapp3.1\Activity3.dll
+D:\Visual Studio Projects\Unit9749_Assignment1\u3184875_9749_Assignment1\Activity3\obj\Debug\netcoreapp3.1\Activity3.pdb

@@ -43,5 +43,12 @@
             parentRow = pRow;
             parentCol = pCol;
         }
+
+        public bool IsEqualPosition(int _row, int _col)
+        {
+            if (row.Equals(_row) && col.Equals(_col))
+                return true;
+            return false;
+        }
     }
 }

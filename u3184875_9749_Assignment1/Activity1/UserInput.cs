@@ -6,11 +6,13 @@ namespace Activity1
     //Separate class so that it is more readable and easy to scroll through
     public class UserInput
     {
+        static Node[] types = { new Node("S", 0), new Node("E", 0), new Node("O", int.MaxValue), new Node("Ww", 6), new Node("Wg", 3), new Node("Wr", 4) };
+
         static List<List<Node>> gridMap = new List<List<Node>>();
         static int newRow;
         static int newCol;
 
-        //Returns the user's input after checking in a while loop,if the input is null or empty,
+        //Returns the user's input after checking in a while loop, if the input is null or empty,
         //if the rows and columns have a valid amount, and whether the types are valid
         public static string GetUserInput(out int row, out int col, out List<List<Node>> newMap)
         {
@@ -51,9 +53,9 @@ namespace Activity1
             return input;
         }
 
-        static void DisplayError(string errorOutput)
+        public static void DisplayError(string errorOutput)
         {
-            Console.WriteLine(errorOutput);
+            Console.WriteLine(errorOutput + "\n Press any Key to continiue");
             Console.ReadKey();
             Console.Clear();
         }
@@ -87,7 +89,7 @@ namespace Activity1
         {
             int prevColCount = 0;
             int startIndex = 0;
-            string sub = null;
+            string sub;
             //making sure that there is only one Start and End Point
             int numOfS = 0;
             int numOfE = 0;
@@ -98,13 +100,15 @@ namespace Activity1
                 gridMap.Add(new List<Node>());
                 startIndex = 0;
                 int currentColCount = 0;
+
                 for (int i = 0; i < row.Length; i++)
                 {
+                    //cutting up the row of strings then checking to see if it is a valid type
                     if (row[i] == ',' || i == row.Length - 1)
                     {
                         sub = row.Substring(startIndex, (i + (i == row.Length - 1 ? 1 : 0)) - startIndex);
-                        //cutting up the row of strings then checking to see if it is a valid type
-                        if (!IsValidType(sub))
+                        Node node = new Node();
+                        if (!IsValidType(false, sub, out node))
                         {
                             DisplayError($"Your Input: [{sub}] is invalid -- \n {row}");
                             return false;
@@ -115,7 +119,6 @@ namespace Activity1
                         if (sub == "E")
                             numOfE++;
 
-                        Node node = GetNodeType(sub);
                         node.row = rowList.IndexOf(row);
                         node.col = currentColCount;
                         gridMap[gridMap.Count - 1].Add(node);
@@ -156,20 +159,54 @@ namespace Activity1
         }
 
         //Loop through the array of types and check if the user's type is valid
-        static bool IsValidType(string userType)
+        public static bool IsValidType(bool isActThree, string userType, out Node nodeType)
         {
-            foreach (Node type in Program.actOne.TypesArray)
+            userType = userType.ToUpper();
+            foreach (Node type in types)
                 if (userType == type.type)
+                {
+                    nodeType = type;
                     return true;
-            return false;
-        }
+                }
 
-        static Node GetNodeType(string type)
-        {
-            foreach (Node node in Program.actOne.TypesArray)
-                if (node.type == type)
-                    return node;
-            return new Node();
+            if (userType[0] == 'W')
+            {
+                if (userType.Length == 1 || userType[1] == '0')
+                {
+                    nodeType = new Node(userType, 1);
+                    return true;
+                }
+
+                int inputNumber;
+                if (int.TryParse(userType.Substring(1, userType.Length - 1), out inputNumber))
+                {
+                    if (inputNumber <= 40 || inputNumber <= 120)
+                    {
+                        nodeType = new Node(userType, 5);
+                        return true;
+                    }
+                    if (inputNumber <= 90)
+                    {
+                        nodeType = new Node(userType, 9);
+                        return true;
+                    }
+                }
+            }
+
+            if (isActThree)
+            {
+                if (userType[0] == 'I')
+                {
+                    if (int.TryParse(userType.Substring(1, userType.Length - 1), out _))
+                    {
+                        nodeType = new Node(userType, 0);
+                        return true;
+                    }
+                }
+            }
+
+            nodeType = new Node();
+            return false;
         }
     }
 }

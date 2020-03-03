@@ -214,11 +214,13 @@ namespace Activity2
             return false;
         }
 
+        //parentCost is used to calculate the difficulty to get to the neighbour
         int Fcost(Node neighbour, int parentCost)
         {
-            int distFromStart = 8 * (Math.Abs(neighbour.row - startNode.row) + Math.Abs(neighbour.col - startNode.col));
-            int distFromEnd = 8 * (Math.Abs(neighbour.row - endNode.row) + Math.Abs(neighbour.col - endNode.col));
-            return distFromStart + distFromEnd + parentCost;
+            int distFromStart = (Math.Abs(neighbour.row - startNode.row) + Math.Abs(neighbour.col - startNode.col));
+            int distFromEnd = (Math.Abs(neighbour.row - endNode.row) + Math.Abs(neighbour.col - endNode.col));
+            //8 is the number of directions the agent can go 
+            return (distFromStart + distFromEnd + parentCost) * 8;
         }
 
         Node[] GetAllNeighbourNodes(Node current)

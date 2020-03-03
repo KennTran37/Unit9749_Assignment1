@@ -27,8 +27,12 @@ namespace Activity3
             string userInput = UserInput.GetUserInput(out actThree.numOfAgents, out actThree.gridRowSize, out actThree.gridColSize, out actThree.gridMap);
             actThree.FindStartingPoint();
 
-            for (int i = 0; i < actThree.numOfAgents; i++) {
-                actThree.agentList.Add(new Agent($"Agent_{i + 1}", actThree.startNode)); }
+            for (int i = 0; i < actThree.numOfAgents; i++)
+            {
+                actThree.agentList.Add(new Agent($"Agent_{i + 1}", actThree.startNode));
+            }
+
+            Graph.BuildGraph(actThree.gridMap, actThree.gridRowSize, actThree.gridColSize);
 
             Thread[] threadArray = new Thread[actThree.agentList.Count];
 
@@ -42,8 +46,6 @@ namespace Activity3
 
             actThree.WaitForMultiThread(threadArray);
 
-            Graph.BuildGraph(actThree.gridMap, actThree.gridRowSize, actThree.gridColSize);
-
             Console.ReadKey();
         }
 
@@ -53,6 +55,7 @@ namespace Activity3
             while (notFinish)
                 foreach (Thread thread in threadArray)
                     notFinish = thread.IsAlive;
+            
         }
 
         void FindStartingPoint()
@@ -71,45 +74,14 @@ namespace Activity3
             });
         }
 
-        public void BuildPath(List<Node> parents, string agentName)
-        {
-            List<Node> finalPath = new List<Node>();
-            finalPath.Add(parents.Last());
-            for (int i = parents.Count - 1; i >= 0; i--)
-            {
-                if (IsParent(finalPath.Last(), parents[i].row, parents[i].col))
-                    finalPath.Add(parents[i]);
-
-                if (parents[i].type == "S")
-                    break;
-            }
-            finalPath.Reverse();
-
-            possiblePaths.Add(finalPath);
-        }
-
-        void PrintPath(List<Node> path, string agentName)
-        {
-            Console.WriteLine(agentName + "Found: ");
-            foreach (var p in path)
-                Console.Write($"({p.Position()})");
-            Console.WriteLine();
-        }
-
-        bool IsParent(Node current, int pRow, int pCol)
-        {
-            if (current.parentRow == pRow && current.parentCol == pCol)
-                return true;
-            return false;
-        }
-
+        //checking if agents has visited the node already
+        //including itself
         public bool OtherAgentsHasVisited(string agentName, Node currnet)
         {
             foreach (Agent agent in agentList)
-                if (agent.agentName != agentName)
-                    foreach (var node in agent.visited)
-                        if (node.row.Equals(currnet.row) && node.col.Equals(currnet.col))
-                            return true;
+                foreach (var node in agent.visited)
+                    if (node.row.Equals(currnet.row) && node.col.Equals(currnet.col))
+                        return true;
             return false;
         }
 

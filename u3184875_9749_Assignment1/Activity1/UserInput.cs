@@ -161,7 +161,6 @@ namespace Activity1
         //Loop through the array of types and check if the user's type is valid
         public static bool IsValidType(bool isActThree, string userType, out Node nodeType)
         {
-            userType = userType.ToUpper();
             foreach (Node type in types)
                 if (userType == type.type)
                 {

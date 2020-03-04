@@ -89,7 +89,7 @@ namespace Activity3
             //already visited nodes taken by this agent to find the item
             List<Node> localVisited = new List<Node>();
 
-            toLookAt.Add(startNode);
+            toLookAt.Add(endNode);
             while (toLookAt.Count > 0)
             {
                 Node current = toLookAt.First();
@@ -99,12 +99,8 @@ namespace Activity3
                 toLookAt.Remove(current);
                 localVisited.Add(current);
 
-                if (current.type == endNode.type)
+                if (current.type == startNode.type)
                 {
-                    //Console.WriteLine("Finish");
-                    //if (agentName == "Agent_2")
-                    //    foreach (var node in localVisited)
-                    //        Console.WriteLine($"{node.Position()} - {node.ParentPos()}");
                     BuildPath(localVisited, agentName);
                     return;
                 }
@@ -129,10 +125,11 @@ namespace Activity3
 
         //parentCost is used to calculate the difficulty to get to the neighbour
         int Fcost(Node neighbour, int parentCost)
-        {   //8 is the number of directions the agent can go 
-            int distFromStart = 8 * (Math.Abs(neighbour.row - startNode.row) + Math.Abs(neighbour.col - startNode.col));
-            int distFromEnd = 8 * (Math.Abs(neighbour.row - endNode.row) + Math.Abs(neighbour.col - endNode.col));
-            return distFromStart + distFromEnd + parentCost;
+        {   
+            int distFromStart = (Math.Abs(neighbour.row - startNode.row) + Math.Abs(neighbour.col - startNode.col));
+            int distFromEnd = (Math.Abs(neighbour.row - endNode.row) + Math.Abs(neighbour.col - endNode.col));
+            //8 is the number of directions the agent can go 
+            return (distFromStart + distFromEnd + parentCost) * 8;
         }
 
         bool IsInList(Node neighbour, List<Node> list)
@@ -161,8 +158,6 @@ namespace Activity3
                 Node node = Program.actThree.gridMap[newRow][newCol];
                 if (node.type == "O")
                     continue;
-                //if (IsInList(node, visited))
-                //    continue;
                 if (!usingAStar && Program.actThree.OtherAgentsHasVisited(agentName, node))
                     continue;
 
@@ -186,16 +181,13 @@ namespace Activity3
             {
                 if (IsParent(finalPath.Last(), parents[i].row, parents[i].col))
                     finalPath.Add(parents[i]);
-
-                if (parents[i].type == "S")
+                if (parents[i].type == endNode.type)
                     break;
             }
-            finalPath.Reverse();
 
             Console.WriteLine(agentName + "Found: ");
             foreach (var p in finalPath)
                 Console.Write($"({p.Position()})");
-            //possiblePaths.Add(finalPath);
         }
 
         bool IsParent(Node current, int pRow, int pCol)

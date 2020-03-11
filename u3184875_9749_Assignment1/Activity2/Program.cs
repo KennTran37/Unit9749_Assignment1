@@ -18,9 +18,11 @@ namespace Activity2
         Node startNode;
         Node endNode;
 
-        //used to look at all neighbour nodes
-        int[] dirRow = { -1, 1, 0, 0, -1, 1, 1, -1 }; //direction in row
-        int[] dirCol = { 0, 0, 1, -1, 1, 1, -1, -1 }; //direction in coloumn
+        //used to look at all directions
+        int[] dirRow = { -1, 1, 0, 0, -1, 1, 1, -1 };
+        int[] dirCol = { 0, 0, 1, -1, 1, 1, -1, -1 };
+
+        List<List<Node>> possiblePaths;
 
         static void Main(string[] args)
         {
@@ -32,6 +34,9 @@ namespace Activity2
 
             Console.WriteLine("Easiest");
             actTwo.EasiestPath(new List<Node>(), new List<Node>());
+
+            Console.WriteLine("Average Number of Steps");
+            actTwo.AveragePath();
 
             Console.WriteLine("Hardest");
             actTwo.HardestPath(new List<Node>(), new List<Node>());
@@ -90,11 +95,13 @@ namespace Activity2
                     return;
                 }
 
-                foreach (Node neighbour in GetAllNeighbourNodes(current))
+                foreach (Node neighbour in GetAllNeighbours(current))
                 {
                     if (!IsInList(neighbour, visited))
                     {
-                        int fcost = Fcost(neighbour, 0);
+                        //current TO neighbour
+                        int cost_cTOn = d(current, neighbour);
+                        int fcost = Fcost(neighbour, cost_cTOn);
                         if (!IsInList(neighbour, toLookAt) || neighbour.costToPos < fcost)
                         {
                             Node node = neighbour;
@@ -126,11 +133,11 @@ namespace Activity2
                     return;
                 }
 
-                foreach (Node neighbour in GetAllNeighbourNodes(current))
+                foreach (Node neighbour in GetAllNeighbours(current))
                 {
                     if (!IsInList(neighbour, visited))
                     {
-                        int fcost = Fcost(neighbour, neighbour.cost);
+                        int fcost = Fcost(neighbour, neighbour.cost + d(current, neighbour));
                         if (!IsInList(neighbour, toLookAt) || neighbour.costToPos < fcost)
                         {
                             Node node = neighbour;
@@ -142,6 +149,14 @@ namespace Activity2
                     }
                 }
             }
+        }
+
+        public void AveragePath()
+        {
+            List<int> pathLengths = new List<int>();
+            foreach (var path in possiblePaths)
+                pathLengths.Add(path.Count);
+            Console.WriteLine(pathLengths.Average());
         }
 
         void HardestPath(List<Node> toLookAt, List<Node> visited)
@@ -162,12 +177,14 @@ namespace Activity2
                     return;
                 }
 
-                foreach (Node neighbour in GetAllNeighbourNodes(current))
+                foreach (Node neighbour in GetAllNeighbours(current))
                 {
                     if (!IsInList(neighbour, visited))
                     {
+                        //does not include the directional cost because it is only focusing
+                        //on the cost of the terrain and from the start to the end
                         int fcost = Fcost(neighbour, neighbour.cost);
-                        if (!IsInList(neighbour, toLookAt) || neighbour.costToPos < fcost)
+                        if (!IsInList(neighbour, toLookAt) || neighbour.costToPos > fcost)
                         {
                             Node node = neighbour;
                             node.costToPos = fcost;
@@ -193,6 +210,7 @@ namespace Activity2
                     break;
             }
             finalPath.Reverse();
+            possiblePaths.Add(finalPath);
 
             foreach (var node in finalPath)
                 Console.Write($"({node.Position()})");
@@ -219,11 +237,16 @@ namespace Activity2
         {
             int distFromStart = (Math.Abs(neighbour.row - startNode.row) + Math.Abs(neighbour.col - startNode.col));
             int distFromEnd = (Math.Abs(neighbour.row - endNode.row) + Math.Abs(neighbour.col - endNode.col));
-            //8 is the number of directions the agent can go 
-            return (distFromStart + distFromEnd + parentCost) * 8;
+            return (distFromStart + distFromEnd + parentCost);
         }
 
-        Node[] GetAllNeighbourNodes(Node current)
+        //getting the directional cost from current to the neighbour
+        int d(Node current, Node neighbour)
+        {   //returning 14 meanings that it is a diagonal node from current
+            return (Math.Abs(current.row - neighbour.row) == 1 && Math.Abs(current.col - neighbour.col) == 1) ? 14 : 10;
+        }
+
+        Node[] GetAllNeighbours(Node current)
         {
             List<Node> unvisitedNeighbours = new List<Node>();
             //8 possible directions to look at
@@ -247,4 +270,5 @@ namespace Activity2
             return unvisitedNeighbours.ToArray();
         }
     }
+
 }

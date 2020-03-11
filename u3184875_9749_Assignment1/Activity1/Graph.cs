@@ -27,6 +27,26 @@ namespace Activity1
             DrawBottom();
         }
 
+        public static void BuildGraph(Node[,] map, int gridRow, int _gridCol)
+        {
+            gridCol = _gridCol;
+            for (int row = 0; row < gridRow; row++)
+            {
+                gridMap.Add(new List<Node>());
+                for (int col = 0; col < gridCol; col++)
+                    gridMap[row].Add(map[row, col]);
+            }
+
+            DrawTop();
+            for (int row = 0; row < gridRow; row++)
+            {
+                DrawMidSpacer(row);
+                if (row < gridRow - 1)
+                    DrawMiddle();
+            }
+            DrawBottom();
+        }
+
         public static void DrawTop()
         {
             Console.Write("┌");

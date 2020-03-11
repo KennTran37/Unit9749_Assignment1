@@ -34,17 +34,19 @@ namespace Activity1
 
             actOne.FindStartingPoint();
             Console.WriteLine("\nShortest Path");
-            actOne.ShortestPath();
+            actOne.GetShortestPath(new Queue<Node>(), new List<Node>());
+            actOne.PrintPath(actOne.possiblePaths.Last());
 
             Console.WriteLine("\nEasiet Path");
             actOne.EasiestPath(new List<Node>(), new List<Node>());
             actOne.PrintPath(actOne.possiblePaths.Last());
 
-            Console.WriteLine("\nAverage Path");
+            Console.WriteLine("\nAverage Number of Steps");
             actOne.AveragePath();
 
             Console.WriteLine("\nHardest Path");
-            actOne.HardestPath();
+            actOne.HardPath(actOne.startNode, new List<Node>() { actOne.startNode }, new List<Node>());
+            actOne.PrintPath(actOne.possiblePaths.Last());
             Console.WriteLine();
 
             Graph.BuildGraph(actOne.gridMap, actOne.gridRowSize, actOne.gridColSize);
@@ -53,35 +55,17 @@ namespace Activity1
         }
 
         #region Shortest Path - Breath First Search
-        void ShortestPath()
-        {
-            //starting the search from the neighbours of startPoint because it will give more results
-            List<List<Node>> possibleShortestPaths = new List<List<Node>>();
-            foreach (Node neighbour in GetAdjacentNeighbours(startNode))
-            {
-                Queue<Node> toVisit = new Queue<Node>();
-                toVisit.Enqueue(neighbour);
-                List<Node> path = GetShortestPath(toVisit, new List<Node>() { startNode, neighbour });
-                if (path != null)
-                    possibleShortestPaths.Add(path);
-            }
-
-            List<Node> shortestPath = possibleShortestPaths.Last();
-            foreach (var path in possibleShortestPaths)
-                if (path.Count < shortestPath.Count)
-                    shortestPath = path;
-
-            BuildPath(shortestPath);
-            PrintPath(possiblePaths.Last());
-        }
 
         //Finds the shortest path to the End Point using the 'Breadth First Search Algorithm'
         //While the nodesToVisit queue isnt empty, look at the neighbouring node at the first element of the queue
         //Reference: https://www.redblobgames.com/pathfinding/a-star/introduction.html
         //           https://www.youtube.com/watch?v=oDqjPvD54Ss
         //           https://www.youtube.com/watch?v=-L-WgKMFuhE&t=125s
-        List<Node> GetShortestPath(Queue<Node> toLookAt, List<Node> visited)
+        void GetShortestPath(Queue<Node> toLookAt, List<Node> visited)
         {
+            toLookAt.Enqueue(startNode);
+            visited.Add(startNode);
+
             while (toLookAt.Count > 0)
             {
                 Node current = toLookAt.Dequeue();
@@ -97,12 +81,11 @@ namespace Activity1
                     if (neighbour.type == "E")
                     {
                         endNode = neighbour;
-                        //BuildPath(parents);
-                        return visited;
+                        BuildPath(visited);
+                        return;
                     }
                 }
             }
-            return null;
         }
         #endregion
 
@@ -177,38 +160,17 @@ namespace Activity1
         #endregion
 
         #region Average Path
-        //Creating the average path based on the common nodes that the paths used
-        //looping through path and checking 
-        void AveragePath()
+        //finds the average number of steps from the possible paths
+        public void AveragePath()
         {
-            List<Node> commonNodes = new List<Node>();
-            for (int path = 0; path < possiblePaths.Count; path++)
-                for (int node = 0; node < possiblePaths[path].Count; node++)
-                    if (possiblePaths[path][node].Position() == possiblePaths[path + (path < possiblePaths.Count - 1 ? 1 : 0)][node].Position())
-                        if (!ContainsNode(commonNodes, possiblePaths[path][node]))
-                            commonNodes.Add(possiblePaths[path][node]);
-
-            foreach (var node in commonNodes)
-                Console.Write($"({node.Position()})");
-            Console.WriteLine();
-        }
-
-        bool ContainsNode(List<Node> commonNodes, Node t)
-        {
-            foreach (Node commNode in commonNodes)
-                //if (commNode.Position() == target.Position())
-                if (commNode.IsEqualPosition(t.row, t.col))
-                    return true;
-            return false;
+            List<int> pathLengths = new List<int>();
+            foreach (var path in possiblePaths)
+                pathLengths.Add(path.Count);
+            Console.WriteLine(pathLengths.Average());
         }
         #endregion
 
         #region Hardest Path - Prim's Algorithm
-        void HardestPath()
-        {
-            HardPath(actOne.startNode, new List<Node>() { actOne.startNode }, new List<Node>());
-            PrintPath(actOne.possiblePaths.Last());
-        }
 
         //Using Prim's Algorithm in an Recursive Method
         //References: https://youtu.be/K_1urzWrzLs

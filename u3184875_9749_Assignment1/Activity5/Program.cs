@@ -23,7 +23,20 @@ namespace Activity5
         static void Main(string[] args)
         {
             Graph.BuildGraph(actFive.gridMap, actFive.gridRowSize, actFive.gridColSize);
+
+            for (int row = 0; row < actFive.gridRowSize; row++)
+            {
+                for (int col = 0; col < actFive.gridColSize; col++)
+                {
+
+                }
+            }
             Console.ReadKey();
+        }
+
+        void ViewCurrentNode(Node current)
+        {
+              
         }
     }
 

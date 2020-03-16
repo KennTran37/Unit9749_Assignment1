@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 //This script takes the input of the user and turns it into a 2D graph when valid
 //it will then use different Algorithm to find the Shortest, Easiest, Average, and Hardest path
@@ -21,6 +22,8 @@ namespace Activity1
         int[] dirRow = { -1, 1, 0, 0 }; //direction in row
         int[] dirCol = { 0, 0, 1, -1 }; //direction in coloumn
 
+        const int sleepTime = 100;
+
         Node startNode;
         Node endNode;
 
@@ -30,26 +33,36 @@ namespace Activity1
         {
             string userInput = UserInput.GetUserInput(out actOne.gridRowSize, out actOne.gridColSize, out actOne.gridMap);
             Console.Clear();
-            Console.WriteLine($"\n\t{userInput}\n");
-
+            //Console.WriteLine($"\n\t{userInput}\n");
             actOne.FindStartingPoint();
-            Console.WriteLine("\nShortest Path");
+
+            Graph.SetUpMap(actOne.gridMap, actOne.gridRowSize, actOne.gridColSize);
+
             actOne.GetShortestPath(new Queue<Node>(), new List<Node>());
+            Console.WriteLine("\nShortest Path");
             actOne.PrintPath(actOne.possiblePaths.Last());
 
-            Console.WriteLine("\nEasiet Path");
+            Console.WriteLine("\nPress any KEY to continue");
+            Console.ReadKey();
+            Graph.ResetMap();
+
             actOne.EasiestPath(new List<Node>(), new List<Node>());
+            Console.WriteLine("\nEasiet Path");
             actOne.PrintPath(actOne.possiblePaths.Last());
+
+            Console.WriteLine("\nPress any KEY to continue");
+            Console.ReadKey();
 
             Console.WriteLine("\nAverage Number of Steps");
             actOne.AveragePath();
+            Console.WriteLine("\nPress any KEY to continue");
+            Console.ReadKey();
 
-            Console.WriteLine("\nHardest Path");
+            Graph.ResetMap();
             actOne.HardPath(actOne.startNode, new List<Node>() { actOne.startNode }, new List<Node>());
+            Console.WriteLine("\nHardest Path");
             actOne.PrintPath(actOne.possiblePaths.Last());
             Console.WriteLine();
-
-            Graph.BuildGraph(actOne.gridMap, actOne.gridRowSize, actOne.gridColSize);
 
             Console.ReadKey();
         }
@@ -65,17 +78,22 @@ namespace Activity1
         {
             toLookAt.Enqueue(startNode);
             visited.Add(startNode);
+            Graph.UpdateMap(startNode.row, startNode.col, NodeState.visited);
+            Thread.Sleep(sleepTime);
 
             while (toLookAt.Count > 0)
             {
                 Node current = toLookAt.Dequeue();
+                Graph.UpdateMap(current.row, current.col, NodeState.visited);
                 foreach (Node neighbour in GetAdjacentNeighbours(current))
                 {
+                    Thread.Sleep(sleepTime);
                     if (!IsInList(neighbour, visited))
                     {
                         toLookAt.Enqueue(neighbour);
                         neighbour.SetParentPos(current.row, current.col);
                         visited.Add(neighbour);
+                        Graph.UpdateMap(neighbour.row, neighbour.col, NodeState.toVisit);
                     }
 
                     if (neighbour.type == "E")
@@ -84,7 +102,9 @@ namespace Activity1
                         BuildPath(visited);
                         return;
                     }
+
                 }
+                Thread.Sleep(sleepTime);
             }
         }
         #endregion
@@ -102,8 +122,14 @@ namespace Activity1
 
             //initializing the list with the neighbours of startPoint
             visited.Add(startNode);
+            Graph.UpdateMap(startNode.row, startNode.col, NodeState.visited);
+            Thread.Sleep(sleepTime);
             foreach (Node neighbour in GetAdjacentNeighbours(startNode))
+            {
                 toLookAt.Add(MinCostNode(startNode, neighbour));
+                Graph.UpdateMap(neighbour.row, neighbour.col, NodeState.toVisit);
+                Thread.Sleep(sleepTime);
+            }
 
             //in a while loop
             //loop through the tolookat list and find the cheapest node
@@ -120,6 +146,7 @@ namespace Activity1
 
                 toLookAt.Remove(current);
                 visited.Add(current);
+                Graph.UpdateMap(current.row, current.col, NodeState.visited);
 
                 if (current.type == "E")
                 {
@@ -138,6 +165,9 @@ namespace Activity1
                             neighbourNode.SetParentPos(current.row, current.col);
                             if (!IsInList(neighbourNode, toLookAt))
                                 toLookAt.Add(neighbourNode);
+
+                            Graph.UpdateMap(neighbour.row, neighbour.col, NodeState.toVisit);
+                            Thread.Sleep(sleepTime);
                         }
                     }
                 }
@@ -190,6 +220,8 @@ namespace Activity1
 
             visited.Add(current);
             toLookAt.Remove(current);
+            Graph.UpdateMap(current.row, current.col, NodeState.visited);
+            Thread.Sleep(sleepTime);
 
             Node[] neighbourNodes;
             Node expensiveNode = GetExpensiveNode(current, visited, out neighbourNodes);
@@ -204,12 +236,16 @@ namespace Activity1
                 }
 
                 foreach (var neighbour in neighbourNodes)
+                {
                     if (neighbour.row != expensiveNode.row && neighbour.col != expensiveNode.col)
                         if (!IsInList(neighbour, toLookAt) && !IsInList(neighbour, visited))
                         {
                             neighbour.SetParentPos(current.row, current.col);
                             toLookAt.Add(neighbour);
+                            Graph.UpdateMap(neighbour.row, neighbour.col, NodeState.toVisit);
+                            Thread.Sleep(sleepTime);
                         }
+                }
 
                 HardPath(expensiveNode, toLookAt, visited);
             }

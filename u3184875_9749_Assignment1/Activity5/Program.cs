@@ -19,15 +19,12 @@ namespace Activity5
         int gridRowSize = 5;
         int gridColSize = 5;
 
-        //up, down, left, right, topLeft, bottomLeft, bottomRight, topRight
-        //int[] dirRow = { -1, 1, 0, 0, -1, 1, 1, -1 };
-        //int[] dirCol = { 0, 0, -1, 1, -1, -1, 1, 1 };
+        //search anti-clockwise but order so that it would check the adjacent neighbours first
+        int[] dirRow = { 0, -1, 1, 1, 0, 1, -1, -1 };
+        int[] dirCol = { -1, -1, 0, -1, 1, 1, 0, 1 };
 
-        int[] dirRow = { -1, 0, 1, 1, 1, 0, -1, -1 };
-        int[] dirCol = { -1, -1, -1, 0, 1, 1, 1, 0 };
-
-        //number of directions to look at
-        const int numOfDir = 8;
+        int[] adjRow = { -1, 1, 0, 0 };
+        int[] adjCol = { 0, 0, -1, 1 };
 
         List<Node> obstacleEdges = new List<Node>();
 
@@ -40,16 +37,6 @@ namespace Activity5
             Graph.BuildGraph(actFive.gridMap, actFive.gridRowSize, actFive.gridColSize);
             actFive.SetNodePositions();
             actFive.LoopThroughMap();
-
-            //int iLooped = 0;
-            //for (int i = actFive.prioDirection(); i < 8; i = i < 7 ? i + 1 : 0)
-            //{
-            //    iLooped++;
-            //    Console.WriteLine($"({actFive.dirRow[i]}, {actFive.dirCol[i]})");
-            //    if (iLooped == 8)
-            //        break;
-            //}
-
 
             Console.WriteLine();
             foreach (var node in actFive.obstacleEdges)
@@ -90,8 +77,6 @@ namespace Activity5
             if (NextToEdge(current, neighbour))
                 obstacleEdges.Add(current);
 
-            //Console.WriteLine(current.Position() + "- " + directionToCheckFirst.ToString());
-
             int rowPos = neighbour.row - current.row;
             int colPos = neighbour.col - current.col;
             //  topLeft                         left              
@@ -123,11 +108,6 @@ namespace Activity5
             }
         }
 
-        void DirectionToPrioitize(Node current, Node neighbour)
-        {
-
-        }
-
         void NewDirectionToGo(Node current, int newRow, int newCol, Directions toGo)
         {
             if (gridMap[newRow, newCol].type != "O" && !obstacleEdges.Contains(gridMap[newRow, newCol]))
@@ -136,6 +116,7 @@ namespace Activity5
                 AltDirections(current, toGo);
         }
 
+        //A Recursive function which will continue to be called until there is an open node
         void AltDirections(Node current, Directions originalDirection)
         {
             switch (originalDirection)
@@ -194,10 +175,16 @@ namespace Activity5
 
         bool NextToEdge(Node current, Node neighbour)
         {
-            int row = Math.Abs(neighbour.row - current.row);
-            int col = Math.Abs(neighbour.col - current.col);
-            if ((row == 1 && col == 0) || (row == 0 && col == 1))
-                return true;
+            for (int i = 0; i < 4; i++)
+            {
+                int newRow = current.row + adjRow[i];
+                int newCol = current.col + adjCol[i];
+
+                if (!IsInBounds(newRow, newCol))
+                    continue;
+                if (gridMap[newRow, newCol].type == "O")
+                    return true;
+            }
             return false;
         }
 
@@ -244,17 +231,6 @@ namespace Activity5
                     break;
             }
 
-            //for (int i = 0; i < numOfDir; i++)
-            //{
-            //    int newRow = current.row + dirRow[i];
-            //    int newCol = current.col + dirCol[i];
-            //    if (newRow < 0 || newCol < 0)
-            //        continue;
-            //    if (newRow > gridRowSize - 1 || newCol > gridColSize - 1)
-            //        continue;
-            //    if (gridMap[newRow, newCol].type == "O")
-            //        return gridMap[newRow, newCol];
-            //}
             return new Node();
         }
 

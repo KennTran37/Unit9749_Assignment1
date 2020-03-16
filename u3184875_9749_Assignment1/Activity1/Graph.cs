@@ -10,7 +10,63 @@ namespace Activity1
         public static int spaceInRow = 1;
 
         static List<List<Node>> gridMap = new List<List<Node>>();
+        static List<List<GridNode>> matrixMap = new List<List<GridNode>>();
         public static int gridCol;
+        public static int gridRow;
+
+        public static void SetUpMap(List<List<Node>> map, int _gridRow, int _gridCol)
+        {
+            gridCol = _gridCol;
+            gridRow = _gridRow;
+
+            for (int row = 0; row < gridRow; row++)
+            {
+                matrixMap.Add(new List<GridNode>());
+                for (int col = 0; col < gridCol; col++)
+                {
+                    GridNode gNode = new GridNode();
+                    gNode.node = map[row][col];
+                    matrixMap[row].Add(gNode);
+                }
+            }
+
+            BuildMap();
+        }
+
+        public static void UpdateMap(int row, int col, NodeState newState)
+        {
+            GridNode gNode = matrixMap[row][col];
+            gNode.state = newState;
+            matrixMap[row][col] = gNode;
+
+            Console.Clear();
+            BuildMap();
+        }
+
+        public static void ResetMap()
+        {
+            for (int row = 0; row < gridRow; row++)
+            {
+                for (int col = 0; col < gridCol; col++)
+                {
+                    GridNode gNode = matrixMap[row][col];
+                    gNode.state = NodeState.Null;
+                    matrixMap[row][col] = gNode;
+                }
+            }
+        }
+
+        static void BuildMap()
+        {
+            DrawTop();
+            for (int i = 0; i < gridRow; i++)
+            {
+                DrawMidSpacer(i);
+                if (i < gridRow - 1)
+                    DrawMiddle();
+            }
+            DrawBottom();
+        }
 
         public static void BuildGraph(List<List<Node>> map, int gridRow, int _gridCol)
         {
@@ -69,10 +125,9 @@ namespace Activity1
                 for (int col = 0; col < gridCol; col++)
                 {
                     int newSpaceInCol = spaceInCol;
-                    Node current = gridMap[row][col];
                     for (int spaceCol = 0; spaceCol < newSpaceInCol; spaceCol++)
                     {
-                        Console.BackgroundColor = SetColourOnType(current.type);
+                        Console.BackgroundColor = SetColour(matrixMap[row][col]);
                         Console.Write(" ");
                         Console.ResetColor();
                     }
@@ -117,8 +172,14 @@ namespace Activity1
             Console.ResetColor();
         }
 
-        public static ConsoleColor SetColourOnType(string type)
+        public static ConsoleColor SetColour(GridNode gridNode)
         {
+            if (gridNode.state == NodeState.toVisit)
+                return ConsoleColor.DarkRed;
+            if (gridNode.state == NodeState.visited)
+                return ConsoleColor.DarkGreen;
+
+            string type = gridNode.node.type;
             if (type == "S")
                 return ConsoleColor.Yellow;
             if (type == "E")
@@ -148,5 +209,16 @@ namespace Activity1
 
             return ConsoleColor.Black;
         }
+    }
+
+    public struct GridNode
+    {
+        public Node node;
+        public NodeState state;
+    }
+
+    public enum NodeState
+    {
+        Null, toVisit, visited
     }
 }

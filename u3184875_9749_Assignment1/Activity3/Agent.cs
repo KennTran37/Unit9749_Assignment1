@@ -12,10 +12,6 @@ namespace Activity3
         public List<Node> toLookAt = new List<Node>();
         public List<Node> visited = new List<Node>();
 
-        //used to look at all neighbour nodes     
-        int[] dirRow = { 0, 0, -1, 1, -1, 1, 1, -1 }; //direction in row
-        int[] dirCol = { 1, -1, 0, 0, 1, 1, -1, -1 }; //direction in coloumn
-
         int sleepTime = 500; //ms
 
         Node startNode, endNode;
@@ -31,7 +27,7 @@ namespace Activity3
         {
             //find neighbour nodes from start
             //get random neighbour and set it as currnet 
-            Node neighbour = GetAllNeighbourNodes(false, visited.First()).FirstOrDefault();
+            Node neighbour = GetAllNeighbourNodes(false, startNode).FirstOrDefault();
             if (!string.IsNullOrEmpty(neighbour.type))
                 DepthFirstSearch(neighbour);
         }
@@ -42,17 +38,17 @@ namespace Activity3
         {
             visited.Add(current);
 
+            //Console.WriteLine($"{current.Position()} - {agentName}");
+
             if (current.type[0] == 'I')
             {
                 if (!Program.actThree.EndNodeAlreadyFound(current))
                 {
                     //once found a new item us A* to construct a better path to the item
-                    //foreach (var node in visited)
-                    //    Console.Write($"({node.Position()})");
-                    //Console.WriteLine(agentName + " End Found");
                     endNode = current;
                     Program.actThree.foundEndNodes.Add(current);
-                    AStar();
+
+                    //AStar();
                     return;
                 }
             }
@@ -66,8 +62,10 @@ namespace Activity3
                 DepthFirstSearch(neighbour);
             }
             else
-            {   //backtrack and find open neighbours to go to
-                for (int i = visited.Count - 1; i >= 0; i--)
+            {
+                int visitedCount = visited.Count;
+                //backtrack and find open neighbours to go to
+                for (int i = visitedCount - 1; i >= 0; i--)
                 {
                     Node neigbour = GetAllNeighbourNodes(false, visited[i]).FirstOrDefault();
                     if (!string.IsNullOrEmpty(neigbour.type))
@@ -99,9 +97,10 @@ namespace Activity3
                 toLookAt.Remove(current);
                 localVisited.Add(current);
 
-                if (current.type == startNode.type)
+                if (current.type == "S")
                 {
                     BuildPath(localVisited, agentName);
+                    Thread.Sleep(sleepTime);
                     return;
                 }
 
@@ -125,7 +124,7 @@ namespace Activity3
 
         //parentCost is used to calculate the difficulty to get to the neighbour
         int Fcost(Node neighbour, int parentCost)
-        {   
+        {
             int distFromStart = (Math.Abs(neighbour.row - startNode.row) + Math.Abs(neighbour.col - startNode.col));
             int distFromEnd = (Math.Abs(neighbour.row - endNode.row) + Math.Abs(neighbour.col - endNode.col));
             //8 is the number of directions the agent can go 
@@ -147,8 +146,8 @@ namespace Activity3
             //8 possible directions to look at
             for (int i = 0; i < 8; i++)
             {
-                int newRow = current.row + dirRow[i];
-                int newCol = current.col + dirCol[i];
+                int newRow = current.row + Program.actThree.dirRow[i];
+                int newCol = current.col + Program.actThree.dirCol[i];
 
                 if (newRow < 0 || newCol < 0)
                     continue;
@@ -158,7 +157,7 @@ namespace Activity3
                 Node node = Program.actThree.gridMap[newRow][newCol];
                 if (node.type == "O")
                     continue;
-                if (!usingAStar && Program.actThree.OtherAgentsHasVisited(agentName, node))
+                if (!usingAStar && Program.actThree.OtherAgentsHasVisited(node))
                     continue;
 
                 node.row = newRow;
